@@ -1,18 +1,17 @@
 package org.apache.spark.examples
 
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 
 object TestWC {
   def main(args: Array[String]): Unit = {
-    // 这里的下划线"_"是占位符，代表数据文件的根目录
-    val rootPath: String = "/Users/guorui"
-    val file: String = s"${rootPath}/wikiOfSpark.txt"
 
-    val conf = new SparkConf().setAppName("1").setMaster("local[*]")
-    val sc = new SparkContext(conf)
+    val spark = new SparkSession
+      .Builder()
+      .appName("ScalaWordCount")
+      .getOrCreate()
 
-    val rdd: RDD[String] = sc.textFile(file)
+    val rdd: RDD[String] = spark.read.textFile(args(0)).rdd
 
     val rddSpilt = rdd.flatMap( line => line.split(" "))
     val rddFilter = rddSpilt.filter( word => !word.equals(" "))
