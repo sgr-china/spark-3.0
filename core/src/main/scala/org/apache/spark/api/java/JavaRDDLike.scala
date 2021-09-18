@@ -123,6 +123,8 @@ trait JavaRDDLike[T, This <: JavaRDDLike[T, This]] extends Serializable {
    */
   def flatMap[U](f: FlatMapFunction[T, U]): JavaRDD[U] = {
     def fn: (T) => Iterator[U] = (x: T) => f.call(x).asScala
+//    // scalastyle:off println
+//    println("sgr")
     JavaRDD.fromRDD(rdd.flatMap(fn)(fakeClassTag[U]))(fakeClassTag[U])
   }
 
