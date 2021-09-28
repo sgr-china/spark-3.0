@@ -92,7 +92,7 @@ abstract class AbstractSqlParser(conf: SQLConf) extends ParserInterface with Log
 
   protected def parse[T](command: String)(toResult: SqlBaseParser => T): T = {
     logDebug(s"Parsing command: $command")
-
+    /** 词法解析器 */
     val lexer = new SqlBaseLexer(new UpperCaseCharStream(CharStreams.fromString(command)))
     lexer.removeErrorListeners()
     lexer.addErrorListener(ParseErrorListener)
@@ -101,7 +101,7 @@ abstract class AbstractSqlParser(conf: SQLConf) extends ParserInterface with Log
     lexer.SQL_standard_keyword_behavior = conf.ansiEnabled
 
     val tokenStream = new CommonTokenStream(lexer)
-    val parser = new SqlBaseParser(tokenStream)
+    val parser = new SqlBaseParser(tokenStream)// 语法解析器
     parser.addParseListener(PostProcessor)
     parser.removeErrorListeners()
     parser.addErrorListener(ParseErrorListener)

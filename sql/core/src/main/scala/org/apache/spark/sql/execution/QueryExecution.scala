@@ -62,7 +62,7 @@ class QueryExecution(
       UnsupportedOperationChecker.checkForBatch(analyzed)
     }
   }
-
+  // 调用 analyzed解析器
   lazy val analyzed: LogicalPlan = executePhase(QueryPlanningTracker.ANALYSIS) {
     // We can't clone `logical` here, which will reset the `_analyzed` flag.
     sparkSession.sessionState.analyzer.executeAndCheck(logical, tracker)
@@ -75,7 +75,7 @@ class QueryExecution(
     // optimizing and planning.
     sparkSession.sharedState.cacheManager.useCachedData(analyzed.clone())
   }
-
+  // 调用 optimizedPlan解析器
   lazy val optimizedPlan: LogicalPlan = executePhase(QueryPlanningTracker.OPTIMIZATION) {
     // clone the plan to avoid sharing the plan instance between different stages like analyzing,
     // optimizing and planning.
@@ -88,7 +88,7 @@ class QueryExecution(
   }
 
   private def assertOptimized(): Unit = optimizedPlan
-
+  // 将优化后的逻辑执行计划转换成物理执行计划
   lazy val sparkPlan: SparkPlan = {
     // We need to materialize the optimizedPlan here because sparkPlan is also tracked under
     // the planning phase
