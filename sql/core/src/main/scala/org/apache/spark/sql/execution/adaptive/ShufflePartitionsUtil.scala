@@ -58,21 +58,21 @@ object ShufflePartitionsUtil extends Logging {
       advisoryTargetSize: Long,
       minNumPartitions: Int): Seq[ShufflePartitionSpec] = {
     // If `minNumPartitions` is very large, it is possible that we need to use a value less than
-    // `advisoryTargetSize` as the target size of a coalesced task.
+    // `advisoryTargetSize` as the target size of a coalesced task. 如果“minNumPartitions”非常大，我们可能需要使用一个小于“advisoryTargetSize”的值作为合并任务的目标大小。
     val totalPostShuffleInputSize = mapOutputStatistics.map(_.bytesByPartitionId.sum).sum
     // The max at here is to make sure that when we have an empty table, we only have a single
-    // coalesced partition.
+    // coalesced partition. 这里的最大值是为了确保当我们有一个空表时，我们只有一个合并的分区。
     // There is no particular reason that we pick 16. We just need a number to prevent
-    // `maxTargetSize` from being set to 0.
-    val maxTargetSize = math.max(
-      math.ceil(totalPostShuffleInputSize / minNumPartitions.toDouble).toLong, 16)
+    // `maxTargetSize` from being set to 0. 我们选择16个并没有特别的原因。我们只需要一个数字来防止' maxTargetSize '被设置为0。
+    val maxTargetSize = math.max(// 求出每个分区的平均大小 如果inputSize=1000M 10分区  而设置advisoryTargetSize为200M 则通过一下计算会排除200M这个设置
+      math.ceil(totalPostShuffleInputSize / minNumPartitions.toDouble).toLong, 16)// 四舍五入的方法
     val targetSize = math.min(maxTargetSize, advisoryTargetSize)
 
     val shuffleIds = mapOutputStatistics.map(_.shuffleId).mkString(", ")
     logInfo(s"For shuffle($shuffleIds), advisory target size: $advisoryTargetSize, " +
       s"actual target size $targetSize.")
 
-    // Make sure these shuffles have the same number of partitions.
+    // Make sure these shuffles have the same number of partitions.确保这些shuffles具有相同数量的分区
     val distinctNumShufflePartitions =
       mapOutputStatistics.map(stats => stats.bytesByPartitionId.length).distinct
     // The reason that we are expecting a single value of the number of shuffle partitions
@@ -90,8 +90,8 @@ object ShufflePartitionsUtil extends Logging {
     val partitionSpecs = ArrayBuffer[CoalescedPartitionSpec]()
     var latestSplitPoint = 0
     var coalescedSize = 0L
-    var i = 0
-    while (i < numPartitions) {
+    var i = 0// 下面开始对 相邻的分区合并
+    while (i < numPartitions) {// 我们从所有shuffle中计算第i个shuffle分区的总大小 对于每个task中的每个相邻分区合并，直到不大于targetSize
       // We calculate the total size of i-th shuffle partitions from all shuffles.
       var totalSizeOfCurrentPartition = 0L
       var j = 0
@@ -101,11 +101,11 @@ object ShufflePartitionsUtil extends Logging {
       }
 
       // If including the `totalSizeOfCurrentPartition` would exceed the target size, then start a
-      // new coalesced partition.
+      // new coalesced partition.如果包含' totalSizeOfCurrentPartition '将超过目标大小，则启动一个新的合并分区。
       if (i > latestSplitPoint && coalescedSize + totalSizeOfCurrentPartition > targetSize) {
         partitionSpecs += CoalescedPartitionSpec(latestSplitPoint, i)
         latestSplitPoint = i
-        // reset postShuffleInputSize.
+        // reset postShuffleInputSize.重置postShuffleInputSize
         coalescedSize = totalSizeOfCurrentPartition
       } else {
         coalescedSize += totalSizeOfCurrentPartition
