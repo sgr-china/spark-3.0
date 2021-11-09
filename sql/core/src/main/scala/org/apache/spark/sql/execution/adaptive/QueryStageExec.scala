@@ -177,7 +177,7 @@ case class ShuffleQueryStageExec(
 
   /**
    * Returns the Option[MapOutputStatistics]. If the shuffle map stage has no partition,
-   * this method returns None, as there is no map statistics.
+   * this method returns None, as there is no map statistics. 返回选择[MapOutputStatistics]。如果shuffle map stage没有分区，这个方法返回None，因为没有映射统计信息。
    */
   def mapStats: Option[MapOutputStatistics] = {
     assert(resultOption.isDefined, "ShuffleQueryStageExec should already be ready")

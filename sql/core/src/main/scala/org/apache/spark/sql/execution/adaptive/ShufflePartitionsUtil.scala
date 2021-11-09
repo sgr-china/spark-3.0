@@ -73,19 +73,19 @@ object ShufflePartitionsUtil extends Logging {
       s"actual target size $targetSize.")
 
     // Make sure these shuffles have the same number of partitions.确保这些shuffles具有相同数量的分区
-    val distinctNumShufflePartitions =
+    val distinctNumShufflePartitions =// 统计shuflle中partition的个数
       mapOutputStatistics.map(stats => stats.bytesByPartitionId.length).distinct
     // The reason that we are expecting a single value of the number of shuffle partitions
     // is that when we add Exchanges, we set the number of shuffle partitions
     // (i.e. map output partitions) using a static setting, which is the value of
     // `spark.sql.shuffle.partitions`. Even if two input RDDs are having different
-    // number of partitions, they will have the same number of shuffle partitions
-    // (i.e. map output partitions).
+    // number of partitions, they will have the same number of shuffle partitions我们期望shuffle分区数量的单一值的原因是，当我们添加Exchanges时，我们使用静态设置设置了shuffle分区的数量
+    // (i.e. map output partitions).                        (即映射输出分区)，即' spark.sql.shuffle.partitions '的值。即使两个输入rdd拥有不同数量的分区，它们也将拥有相同数量的shuffle分区
     assert(
       distinctNumShufflePartitions.length == 1,
       "There should be only one distinct value of the number of shuffle partitions " +
         "among registered Exchange operators.")
-
+    // shuffle分区数
     val numPartitions = distinctNumShufflePartitions.head
     val partitionSpecs = ArrayBuffer[CoalescedPartitionSpec]()
     var latestSplitPoint = 0
@@ -95,7 +95,7 @@ object ShufflePartitionsUtil extends Logging {
       // We calculate the total size of i-th shuffle partitions from all shuffles.
       var totalSizeOfCurrentPartition = 0L
       var j = 0
-      while (j < mapOutputStatistics.length) {
+      while (j < mapOutputStatistics.length) {// 对每个shuffle中的partition进行合并
         totalSizeOfCurrentPartition += mapOutputStatistics(j).bytesByPartitionId(i)
         j += 1
       }

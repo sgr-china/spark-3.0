@@ -25,4 +25,4 @@ package org.apache.spark
  *   (may be inexact due to use of compressed map statuses)
  */
 private[spark] class MapOutputStatistics(val shuffleId: Int, val bytesByPartitionId: Array[Long])
-//每个映射输出分区的大约输出字节数 可能是不准确的使用压缩map状态
+//每个映射输出分区的大约输出字节数 可能是不准确的使用压缩map状态 shuffleID和每个partition的大小
