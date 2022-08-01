@@ -32,7 +32,7 @@ import org.apache.spark.sql.internal.SQLConf
 /**
  * A rule to optimize skewed joins to avoid straggler tasks whose share of data are significantly
  * larger than those of the rest of the tasks.
- *
+ * 优化倾斜连接的规则，以避免数据共享明显大于其他任务的离散任务。
  * The general idea is to divide each skew partition into smaller partitions and replicate its
  * matching partition on the other side of the join so that they can run in parallel tasks.
  * Note that when matching partitions from the left side and the right side both have skew,

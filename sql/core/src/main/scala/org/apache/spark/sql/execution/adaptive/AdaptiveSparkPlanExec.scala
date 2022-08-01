@@ -158,6 +158,8 @@ case class AdaptiveSparkPlanExec(
     // In case of this adaptive plan being executed out of `withActive` scoped functions, e.g.,
     // `plan.queryExecution.rdd`, we need to set active session here as new plan nodes can be
     // created in the middle of the execution.
+    // 在这种情况下，自适应计划是在' withActive '作用域函数之外执行的，
+    // 例如，' plan. queryexecution . Rdd '，我们需要在这里设置活动会话，因为新的计划节点可以在执行过程中创建。
     context.session.withActive {
       val executionId = getExecutionId
       var currentLogicalPlan = currentPhysicalPlan.logicalLink.get
@@ -172,6 +174,7 @@ case class AdaptiveSparkPlanExec(
           executionId.foreach(onUpdatePlan(_, result.newStages.map(_.plan)))
 
           // Start materialization of all new stages and fail fast if any stages failed eagerly
+          // 开始所有新阶段的实体化，如果任何阶段急遽失败，则快速失败
           result.newStages.foreach { stage =>
             try {
               stage.materialize().onComplete { res =>
@@ -191,6 +194,8 @@ case class AdaptiveSparkPlanExec(
         // Wait on the next completed stage, which indicates new stats are available and probably
         // new stages can be created. There might be other stages that finish at around the same
         // time, so we process those stages too in order to reduce re-planning.
+        // 等待下一个完成的阶段，这表明新的统计数据可用，可能可以创建新的阶段。可能会有其他阶段在同一时间结束，
+        // 所以我们也处理这些阶段，以减少重新规划。
         val nextMsg = events.take()
         val rem = new util.ArrayList[StageMaterializationEvent]()
         events.drainTo(rem)
@@ -321,11 +326,16 @@ case class AdaptiveSparkPlanExec(
    * This method is called recursively to traverse the plan tree bottom-up and create a new query
    * stage or try reusing an existing stage if the current node is an [[Exchange]] node and all of
    * its child stages have been materialized.
+   * 递归调用此方法，以自底向上遍历计划树并创建新的查询阶段，或者如果当前节点是[[Exchange]]节点且其所有子阶段都已物化，
+   * 则尝试重用现有阶段。
    *
    * With each call, it returns:
    * 1) The new plan replaced with [[QueryStageExec]] nodes where new stages are created.
+   * 新计划替换为[[QueryStageExec]]节点，其中创建了新阶段。
    * 2) Whether the child query stages (if any) of the current node have all been materialized.
+   * 当前节点的子查询阶段(如果有的话)是否都已物化。
    * 3) A list of the new query stages that have been created.
+   * 已创建的新查询阶段的列表。
    */
   private def createQueryStages(plan: SparkPlan): CreateStageResult = plan match {
     case e: Exchange =>
